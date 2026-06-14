@@ -1,0 +1,15 @@
+torch
+torchvision
+numpy
+pandas
+opencv-python
+Pillow
+albumentations
+pyyaml
+matplotlib
+scikit-learn
+tqdm
+pytest
+ruff
+onnx
+onnxruntime

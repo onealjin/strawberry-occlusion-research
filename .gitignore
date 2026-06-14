@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.env
+
+# Data: never commit private data
+data/
+data_raw/
+data_private/
+data_private_jt/
+*.jpg
+*.jpeg
+*.png
+*.bmp
+*.tif
+*.tiff
+*.mp4
+*.avi
+*.zip
+
+# Models/checkpoints
+*.pt
+*.pth
+*.ckpt
+*.onnx
+*.engine
+
+# Logs/experiments
+runs/
+wandb/
+mlruns/
+outputs/
+experiments_private/
+
+# VisionMaster / company files
+*.vmp
+*.vm*
+visionmaster_exports/
+patent_notes/
+jt_internal_reports/
+
+# OS/editor
+.DS_Store
+.vscode/
