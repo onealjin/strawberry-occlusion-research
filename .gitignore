@@ -6,6 +6,8 @@ __pycache__/
 
 # Data: never commit private data
 data/
+!src/strawberry_occlusion/data/
+!src/strawberry_occlusion/data/*.py
 data_raw/
 data_private/
 data_private_jt/
