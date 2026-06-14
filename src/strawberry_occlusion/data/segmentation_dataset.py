@@ -61,7 +61,9 @@ class SegmentationDataset(Dataset[SegmentationSample]):
         image_paths = _list_files(
             self.image_dir, suffixes=_normalize_suffixes(image_suffixes)
         )
-        mask_paths = _list_files(self.mask_dir, suffixes=_normalize_suffixes(mask_suffixes))
+        mask_paths = _list_files(
+            self.mask_dir, suffixes=_normalize_suffixes(mask_suffixes)
+        )
 
         if not image_paths:
             raise ValueError(f"No supported image files found in {self.image_dir}")
@@ -78,11 +80,17 @@ class SegmentationDataset(Dataset[SegmentationSample]):
         missing_masks = sorted(image_stems - mask_stems)
         extra_masks = sorted(mask_stems - image_stems)
         if missing_masks:
-            raise ValueError(f"Missing masks for image stem(s): {_format_stems(missing_masks)}")
+            raise ValueError(
+                f"Missing masks for image stem(s): {_format_stems(missing_masks)}"
+            )
         if extra_masks:
-            raise ValueError(f"Masks without matching images: {_format_stems(extra_masks)}")
+            raise ValueError(
+                f"Masks without matching images: {_format_stems(extra_masks)}"
+            )
 
-        self.pairs = tuple((image_path, masks_by_stem[image_path.stem]) for image_path in image_paths)
+        self.pairs = tuple(
+            (image_path, masks_by_stem[image_path.stem]) for image_path in image_paths
+        )
 
     def __len__(self) -> int:
         return len(self.pairs)
@@ -152,7 +160,9 @@ def _raise_for_duplicate_stems(paths: Iterable[Path], *, kind: str) -> None:
     for path in paths:
         stems.setdefault(path.stem, []).append(path)
 
-    duplicate_stems = sorted(stem for stem, matches in stems.items() if len(matches) > 1)
+    duplicate_stems = sorted(
+        stem for stem, matches in stems.items() if len(matches) > 1
+    )
     if duplicate_stems:
         raise ValueError(
             f"Duplicate {kind} stem(s) are ambiguous: {_format_stems(duplicate_stems)}"

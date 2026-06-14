@@ -1,66 +1,48 @@
-\# AGENTS.md
+﻿# Agent Instructions
 
+## Project
 
+This is a non-confidential public research codebase for occlusion-aware strawberry calyx/stem segmentation and cutline estimation.
 
-This repository develops a non-confidential research prototype for occlusion-aware strawberry calyx/stem segmentation and cutline estimation.
+## Confidentiality Rules
 
+- Use only public, synthetic, toy, or sanitized data.
+- Do not read, request, copy, commit, upload, or reference private company data.
+- Do not use raw private images, masks, industrial project files, production machine settings, patent notes, internal reports, proprietary thresholds, or internal metrics unless the user explicitly says they are cleared.
+- Never hard-code private local data paths.
+- Public code must not depend on private local folders.
+- Tests must use synthetic, toy, temporary, or public-safe data.
 
+## Tool Roles
 
-\## Confidentiality rules
+- Codex is the primary implementation agent.
+- Claude Code is the secondary reviewer, debugger, and rescue agent.
+- Claude Code should usually diagnose, review, or propose minimal fixes before editing.
+- Avoid style-only rewrites unless they improve correctness, privacy safety, maintainability, or research clarity.
 
-\- Do not add, generate, commit, summarize, or expose real JIATONG images, videos, labels, production metrics, machine parameters, VisionMaster projects, or patent notes.
+## Coding Preferences
 
-\- Use only public datasets, synthetic data, toy masks, or sanitized examples in this repository.
+- Prefer simple, readable Python and PyTorch.
+- Use modular files under src/strawberry_occlusion/.
+- Use pathlib for paths.
+- Use pytest for tests.
+- Avoid unnecessary dependencies.
+- Do not add real images, masks, model weights, private artifacts, or large binary files.
 
-\- Private JIATONG data lives outside this repo and must be accessed only through local paths configured by the user.
+## Standard Commands
 
-\- Do not hard-code private paths, thresholds, customer names, machine settings, or proprietary workflows.
+Run tests with: python -m pytest
 
+Check repository state with: git status
 
+## Expected Workflow
 
-\## Project goal
+Before editing:
+- Summarize the intended change.
+- List likely files to modify.
 
-Build a modular research pipeline:
-
-image -> visible segmentation -> occlusion-state classification -> amodal attachment-zone estimation -> cutline geometry -> uncertainty-aware decision -> JSON output.
-
-
-
-\## Coding rules
-
-\- Prefer simple, readable PyTorch and Python.
-
-\- Keep modules small and testable.
-
-\- Use config files instead of hard-coded constants.
-
-\- Any model should support ONNX export.
-
-\- Any inference output should be serializable to JSON.
-
-\- Add tests for geometry, cutline metrics, post-processing, and ONNX parity where possible.
-
-
-
-\## Commands
-
-\- Install: `pip install -e .`
-
-\- Test: `pytest`
-
-\- Format: `ruff format .`
-
-\- Lint: `ruff check .`
-
-
-
-\## Done means
-
-\- Code runs without syntax errors.
-
-\- Relevant tests are added or updated.
-
-\- No private data, paths, or proprietary JIATONG details are committed.
-
-\- The change is documented if it affects training, inference, or evaluation.
-
+After editing:
+- Run relevant tests.
+- Summarize what changed.
+- Mention tests not run.
+- Mention any privacy or data-leakage risks.

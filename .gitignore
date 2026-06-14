@@ -45,3 +45,9 @@ jt_internal_reports/
 # OS/editor
 .DS_Store
 .vscode/
+
+# Local AI handoff notes
+.agent_handoffs/
+CLAUDE.local.md
+.claude/settings.local.json
+
