@@ -51,3 +51,6 @@ jt_internal_reports/
 CLAUDE.local.md
 .claude/settings.local.json
 
+
+# Generated Python package metadata
+*.egg-info/
