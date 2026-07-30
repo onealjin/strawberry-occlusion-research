@@ -24,7 +24,7 @@ from strawberry_occlusion.evaluation.segmentation import (
 
 
 def test_evaluation_package_exports_segmentation_module() -> None:
-    assert evaluation_package.__all__ == ["segmentation"]
+    assert evaluation_package.__all__ == ["cutline", "segmentation"]
     assert (
         evaluation_package.segmentation.evaluate_segmentation_checkpoint
         is evaluate_segmentation_checkpoint

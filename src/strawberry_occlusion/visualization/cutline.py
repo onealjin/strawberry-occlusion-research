@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
+from typing import Any
+
 import numpy as np
 from PIL import Image, ImageDraw
 
@@ -10,16 +13,18 @@ from strawberry_occlusion.visualization.segmentation import colorize_mask
 
 
 TITLE_HEIGHT = 24
-STATUS_HEIGHT = 52
+STATUS_HEIGHT = 72
 PANEL_TITLES = (
     "RGB / colour mask",
-    "Flesh mask",
+    "Flesh mask + boundary",
     "Calyx mask",
     "Contact band",
     "Candidate geometry",
     "Final offset cutline",
 )
 CONTACT_COLOR = (255, 0, 255)
+FLESH_REGION_COLOR = (128, 0, 0)
+FLESH_BOUNDARY_COLOR = (255, 0, 0)
 FLESH_CENTROID_COLOR = (0, 128, 255)
 ATTACHMENT_ANCHOR_COLOR = (255, 255, 0)
 DIRECTION_AXIS_COLOR = (255, 128, 0)
@@ -33,6 +38,7 @@ def create_mask_cutline_visualization(
     result: MaskCutlineResult,
     *,
     image: Image.Image | np.ndarray | None = None,
+    diagnostics: Mapping[str, Any] | None = None,
 ) -> Image.Image:
     """Render six deterministic panels and a compact status footer."""
 
@@ -44,7 +50,8 @@ def create_mask_cutline_visualization(
     input_panel = (
         colour_mask if image is None else _rgb_array(image, shape=mask_array.shape)
     )
-    flesh_panel = _binary_panel(result.flesh_mask, color=(255, 0, 0))
+    flesh_panel = _binary_panel(result.flesh_mask, color=FLESH_REGION_COLOR)
+    flesh_panel[_binary_boundary(result.flesh_mask)] = FLESH_BOUNDARY_COLOR
     calyx_panel = _binary_panel(result.calyx_mask, color=(0, 255, 0))
     contact_panel = _binary_panel(result.contact_band, color=CONTACT_COLOR)
     candidate_panel = _geometry_panel(
@@ -56,7 +63,7 @@ def create_mask_cutline_visualization(
     final_panel = _geometry_panel(
         input_panel,
         result,
-        include_candidate=False,
+        include_candidate=True,
         include_final=True,
     )
     panels = (
@@ -84,7 +91,12 @@ def create_mask_cutline_visualization(
         canvas.paste(panel, (column * width, row * (height + TITLE_HEIGHT)))
 
     footer_top = 2 * (height + TITLE_HEIGHT)
-    _draw_status_footer(canvas, result, top=footer_top)
+    _draw_status_footer(
+        canvas,
+        result,
+        diagnostics=diagnostics,
+        top=footer_top,
+    )
     return canvas
 
 
@@ -120,11 +132,12 @@ def _geometry_panel(
             radius=marker_radius,
         )
     if include_candidate and result.candidate_cutline is not None:
+        candidate_width = max(3, line_width + 2) if include_final else line_width
         _draw_segment(
             draw,
             result.candidate_cutline,
             fill=CANDIDATE_CUTLINE_COLOR,
-            width=line_width,
+            width=candidate_width,
         )
     if include_final and result.final_cutline is not None:
         _draw_segment(
@@ -182,10 +195,14 @@ def _draw_status_footer(
     image: Image.Image,
     result: MaskCutlineResult,
     *,
+    diagnostics: Mapping[str, Any] | None,
     top: int,
 ) -> None:
     draw = ImageDraw.Draw(image)
-    reason = result.failure_reason or "cutline estimated"
+    reason = (
+        result.failure_reason
+        or "finite geometry produced; geometric quality not assessed"
+    )
     summary = (
         f"status={result.status} | {reason} | "
         f"dilation={result.parameters.calyx_dilation_radius} | "
@@ -196,7 +213,26 @@ def _draw_status_footer(
         f"{result.contact_component_count}"
     )
     draw.text((5, top + 4), summary, fill=(255, 255, 255))
+    diagnostics = diagnostics or {}
+    lines_coincide = diagnostics.get(
+        "candidate_final_lines_coincide",
+        result.candidate_cutline == result.final_cutline
+        if result.candidate_cutline is not None
+        else None,
+    )
+    proxy_summary = (
+        "candidate/final lines coincide="
+        f"{_format_value(lines_coincide)} | "
+        "Flesh loss="
+        f"{_format_value(diagnostics.get('flesh_loss_proxy_pixel_count'))} px "
+        f"({_format_ratio(diagnostics.get('flesh_loss_proxy_ratio'))}) | "
+        "Calyx retained="
+        f"{_format_value(diagnostics.get('calyx_retention_proxy_pixel_count'))} px "
+        f"({_format_ratio(diagnostics.get('calyx_retention_proxy_ratio'))})"
+    )
+    draw.text((5, top + 25), proxy_summary, fill=(255, 255, 255))
     legend = (
+        ("F boundary", FLESH_BOUNDARY_COLOR),
         ("centroid", FLESH_CENTROID_COLOR),
         ("anchor", ATTACHMENT_ANCHOR_COLOR),
         ("axis", DIRECTION_AXIS_COLOR),
@@ -205,15 +241,42 @@ def _draw_status_footer(
     )
     x = 5
     for label, color in legend:
-        draw.rectangle((x, top + 28, x + 10, top + 38), fill=color)
-        draw.text((x + 14, top + 26), label, fill=(255, 255, 255))
-        x += 76
+        draw.rectangle((x, top + 49, x + 10, top + 59), fill=color)
+        draw.text((x + 14, top + 47), label, fill=(255, 255, 255))
+        x += 86
 
 
 def _binary_panel(mask: np.ndarray, *, color: tuple[int, int, int]) -> np.ndarray:
     panel = np.zeros((*mask.shape, 3), dtype=np.uint8)
     panel[mask] = color
     return panel
+
+
+def _binary_boundary(mask: np.ndarray) -> np.ndarray:
+    binary = np.asarray(mask, dtype=bool)
+    padded = np.pad(binary, 1, mode="constant", constant_values=False)
+    interior = (
+        binary
+        & padded[:-2, 1:-1]
+        & padded[2:, 1:-1]
+        & padded[1:-1, :-2]
+        & padded[1:-1, 2:]
+    )
+    return binary & ~interior
+
+
+def _format_value(value: Any) -> str:
+    if value is None:
+        return "n/a"
+    if isinstance(value, bool):
+        return "yes" if value else "no"
+    return str(value)
+
+
+def _format_ratio(value: Any) -> str:
+    if value is None:
+        return "n/a"
+    return f"{float(value):.4f}"
 
 
 def _rgb_array(
