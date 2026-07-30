@@ -12,6 +12,14 @@ class Point:
     y: float
 
 
+@dataclass(frozen=True)
+class LineSegment:
+    """Finite line segment between two image-coordinate points."""
+
+    start: Point
+    end: Point
+
+
 def distance(start: Point, end: Point) -> float:
     """Return the Euclidean distance between two points."""
 

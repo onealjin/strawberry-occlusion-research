@@ -1,3 +1,6 @@
 """Headless visualization helpers for segmentation quality assurance."""
 
-__all__ = ["segmentation"]
+from strawberry_occlusion.visualization import segmentation
+from strawberry_occlusion.visualization import cutline
+
+__all__ = ["cutline", "segmentation"]
