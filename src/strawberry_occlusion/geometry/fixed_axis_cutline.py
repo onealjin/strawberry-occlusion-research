@@ -32,6 +32,16 @@ class FixedAxisCutlineParameters:
 
 
 @dataclass(frozen=True)
+class ProjectedPointDiagnostics:
+    """Discrete-mask diagnostics for one continuous projected point."""
+
+    nearest_in_bounds_semantic_class: int | None
+    inside_selected_flesh_component: bool | None
+    distance_to_selected_calyx_mask: float | None
+    distance_to_selected_contact_mask: float | None
+
+
+@dataclass(frozen=True)
 class FixedAxisCutlineResult:
     """Geometry and diagnostics for one experimental v2a estimate.
 
@@ -68,6 +78,10 @@ class FixedAxisCutlineResult:
     final_cut_coordinate: float | None
     signed_offset_pixels: float
     diagnostic_reference_point: Point | None
+    flesh_centroid_projected_reference_point: Point | None
+    flesh_centroid_projected_reference_diagnostics: ProjectedPointDiagnostics | None
+    attachment_anchor_projected_reference_point: Point | None
+    attachment_anchor_projected_reference_diagnostics: ProjectedPointDiagnostics | None
     candidate_cutline: LineSegment | None
     final_cutline: LineSegment | None
     minimum_contact_projection: float | None
@@ -192,6 +206,10 @@ def estimate_fixed_axis_cutline(
             unshifted_cut_coordinate=None,
             final_cut_coordinate=None,
             diagnostic_reference_point=None,
+            flesh_centroid_projected_reference_point=None,
+            flesh_centroid_projected_reference_diagnostics=None,
+            attachment_anchor_projected_reference_point=None,
+            attachment_anchor_projected_reference_diagnostics=None,
             candidate_cutline=None,
             final_cutline=None,
             minimum_contact_projection=None,
@@ -230,6 +248,30 @@ def estimate_fixed_axis_cutline(
         x=float(reference_array[0]),
         y=float(reference_array[1]),
     )
+    flesh_centroid_reference = _project_point_to_fixed_line(
+        baseline.flesh_centroid,
+        coordinate=final_coordinate,
+        axis=normalized_axis,
+    )
+    attachment_anchor_reference = _project_point_to_fixed_line(
+        baseline.attachment_anchor,
+        coordinate=final_coordinate,
+        axis=normalized_axis,
+    )
+    flesh_centroid_reference_diagnostics = _projected_point_diagnostics(
+        flesh_centroid_reference,
+        semantic_mask=mask,
+        selected_flesh_mask=selected_flesh_mask,
+        selected_calyx_mask=selected_calyx_mask,
+        selected_contact_mask=baseline.contact_band,
+    )
+    attachment_anchor_reference_diagnostics = _projected_point_diagnostics(
+        attachment_anchor_reference,
+        semantic_mask=mask,
+        selected_flesh_mask=selected_flesh_mask,
+        selected_calyx_mask=selected_calyx_mask,
+        selected_contact_mask=baseline.contact_band,
+    )
     perpendicular = (-normalized_axis[1], normalized_axis[0])
     candidate_cutline = clip_infinite_line_to_image(
         _point_on_line(unshifted_coordinate, normalized_axis),
@@ -258,6 +300,14 @@ def estimate_fixed_axis_cutline(
         "unshifted_cut_coordinate": unshifted_coordinate,
         "final_cut_coordinate": final_coordinate,
         "diagnostic_reference_point": reference_point,
+        "flesh_centroid_projected_reference_point": flesh_centroid_reference,
+        "flesh_centroid_projected_reference_diagnostics": (
+            flesh_centroid_reference_diagnostics
+        ),
+        "attachment_anchor_projected_reference_point": (attachment_anchor_reference),
+        "attachment_anchor_projected_reference_diagnostics": (
+            attachment_anchor_reference_diagnostics
+        ),
         "minimum_contact_projection": float(sorted_projections[0]),
         "maximum_contact_projection": float(sorted_projections[-1]),
         "selected_contact_projection": unshifted_coordinate,
@@ -423,6 +473,63 @@ def _point_on_line(
     axis: tuple[float, float],
 ) -> Point:
     return Point(x=coordinate * axis[0], y=coordinate * axis[1])
+
+
+def _project_point_to_fixed_line(
+    point: Point | None,
+    *,
+    coordinate: float,
+    axis: tuple[float, float],
+) -> Point | None:
+    if point is None:
+        return None
+    projection = point.x * axis[0] + point.y * axis[1]
+    displacement = coordinate - projection
+    return Point(
+        x=point.x + displacement * axis[0],
+        y=point.y + displacement * axis[1],
+    )
+
+
+def _projected_point_diagnostics(
+    point: Point | None,
+    *,
+    semantic_mask: np.ndarray,
+    selected_flesh_mask: np.ndarray,
+    selected_calyx_mask: np.ndarray,
+    selected_contact_mask: np.ndarray,
+) -> ProjectedPointDiagnostics | None:
+    if point is None:
+        return None
+    height, width = semantic_mask.shape
+    nearest_x = min(max(int(np.floor(point.x + 0.5)), 0), width - 1)
+    nearest_y = min(max(int(np.floor(point.y + 0.5)), 0), height - 1)
+    point_is_in_bounds = 0.0 <= point.x <= width - 1 and 0.0 <= point.y <= height - 1
+    return ProjectedPointDiagnostics(
+        nearest_in_bounds_semantic_class=int(semantic_mask[nearest_y, nearest_x]),
+        inside_selected_flesh_component=(
+            bool(selected_flesh_mask[nearest_y, nearest_x])
+            if point_is_in_bounds
+            else False
+        ),
+        distance_to_selected_calyx_mask=_distance_to_mask(
+            point,
+            selected_calyx_mask,
+        ),
+        distance_to_selected_contact_mask=_distance_to_mask(
+            point,
+            selected_contact_mask,
+        ),
+    )
+
+
+def _distance_to_mask(point: Point, binary_mask: np.ndarray) -> float | None:
+    coordinates_yx = np.argwhere(binary_mask)
+    if not len(coordinates_yx):
+        return None
+    delta_x = coordinates_yx[:, 1].astype(np.float64) - point.x
+    delta_y = coordinates_yx[:, 0].astype(np.float64) - point.y
+    return float(np.sqrt(delta_x * delta_x + delta_y * delta_y).min())
 
 
 def _axis_disagreement_angle(
