@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="270" viewBox="0 0 1000 270" role="img" aria-labelledby="title description">
+  <title id="title">Occlusion-aware perception-to-action research pipeline</title>
+  <desc id="description">A schematic progresses from an occluded synthetic input through visible semantic segmentation and attachment evidence to three image-space cut-coordinate estimators, ending in either a finite coordinate or a structured failure.</desc>
+  <style>
+    text { font-family: system-ui, sans-serif; fill: #203040; }
+    .heading { font-size: 15px; font-weight: 700; }
+    .body { font-size: 12px; }
+    .small { font-size: 11px; }
+    .box { fill: #f7fafb; stroke: #8da3b1; stroke-width: 1.4; }
+    .arrow { fill: none; stroke: #546e7a; stroke-width: 2; marker-end: url(#arrowhead); }
+  </style>
+  <defs>
+    <marker id="arrowhead" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="#546e7a"/>
+    </marker>
+  </defs>
+
+  <rect x="20" y="34" width="165" height="154" rx="10" class="box"/>
+  <text x="102.5" y="58" text-anchor="middle" class="heading">Partial occlusion</text>
+  <rect x="39" y="74" width="127" height="88" rx="6" fill="#17242e"/>
+  <ellipse cx="94" cy="118" rx="42" ry="27" fill="#cb4b50"/>
+  <path d="M123 108h30v18h-30z" fill="#55a96b"/>
+  <path d="M112 91c13-14 31-10 38 4c-9 11-27 15-38-4z" fill="#315f31" stroke="#d5e8a8"/>
+  <text x="102.5" y="179" text-anchor="middle" class="small">Synthetic / public-safe input</text>
+
+  <path d="M185 111H220" class="arrow"/>
+  <rect x="220" y="34" width="165" height="154" rx="10" class="box"/>
+  <text x="302.5" y="58" text-anchor="middle" class="heading">Visible segmentation</text>
+  <rect x="239" y="74" width="127" height="88" rx="6" fill="#17242e"/>
+  <ellipse cx="294" cy="118" rx="42" ry="27" fill="#cf4f50"/>
+  <path d="M323 108h30v18h-30z" fill="#56a96a"/>
+  <path d="M312 91c13-14 31-10 38 4c-9 11-27 15-38-4z" fill="#59656b"/>
+  <text x="302.5" y="179" text-anchor="middle" class="small">Background 0 · Flesh 1 · Calyx 2</text>
+
+  <path d="M385 111H420" class="arrow"/>
+  <rect x="420" y="34" width="165" height="154" rx="10" class="box"/>
+  <text x="502.5" y="58" text-anchor="middle" class="heading">Attachment evidence</text>
+  <ellipse cx="483" cy="116" rx="38" ry="25" fill="#cf4f50" opacity="0.45"/>
+  <path d="M509 107h35v18h-35z" fill="#56a96a" opacity="0.55"/>
+  <rect x="505" y="102" width="12" height="28" rx="4" fill="#c33cc8"/>
+  <path d="M465 145L537 79" stroke="#647f93" stroke-dasharray="4 3"/>
+  <text x="502.5" y="164" text-anchor="middle" class="small">Visible contact + support</text>
+  <text x="502.5" y="179" text-anchor="middle" class="small">or insufficient evidence</text>
+
+  <path d="M585 111H620" class="arrow"/>
+  <rect x="620" y="34" width="165" height="154" rx="10" class="box"/>
+  <text x="702.5" y="58" text-anchor="middle" class="heading">Action geometry</text>
+  <text x="643" y="89" class="body">v1</text>
+  <path d="M672 83V98" stroke="#d22aa8" stroke-width="3"/>
+  <text x="643" y="121" class="body">v2a</text>
+  <path d="M702 115V130" stroke="#2b78d0" stroke-width="3"/>
+  <text x="643" y="153" class="body">v2b</text>
+  <path d="M732 147V162" stroke="#22a76f" stroke-width="3"/>
+  <text x="702.5" y="179" text-anchor="middle" class="small">Cut coordinate along fixed axis</text>
+
+  <path d="M785 111H820" class="arrow"/>
+  <rect x="820" y="34" width="160" height="68" rx="10" fill="#eff9f3" stroke="#61a477" stroke-width="1.4"/>
+  <text x="900" y="62" text-anchor="middle" class="heading">Finite coordinate</text>
+  <text x="900" y="83" text-anchor="middle" class="small">image-space output</text>
+  <rect x="820" y="120" width="160" height="68" rx="10" fill="#fff5f1" stroke="#c77b62" stroke-width="1.4"/>
+  <text x="900" y="148" text-anchor="middle" class="heading">Structured failure</text>
+  <text x="900" y="169" text-anchor="middle" class="small">no supported coordinate</text>
+  <path d="M803 111V154H820" fill="none" stroke="#546e7a" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+  <rect x="280" y="220" width="440" height="32" rx="16" fill="#edf2f5"/>
+  <text x="500" y="241" text-anchor="middle" class="heading">Image-space coordinates; not machine calibrated.</text>
+</svg>

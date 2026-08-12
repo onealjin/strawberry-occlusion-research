@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="780" height="184" viewBox="0 0 780 184" role="img" aria-labelledby="title description">
+  <title id="title">Matched four-region procedural occlusion example</title>
+  <desc id="description">The same procedurally generated occluder is translated to attachment, calyx tip, distant Flesh, and background regions of a toy semantic fruit.</desc>
+  <style>
+    text { font-family: system-ui, sans-serif; fill: #203040; }
+    .label { font-size: 13px; font-weight: 650; }
+    .note { font-size: 12px; }
+  </style>
+  <defs>
+    <path id="flesh" d="M72 21h1v1h-1zM61 22h23v1h-23zM56 23h33v1h-33zM53 24h39v1h-39zM50 25h45v1h-45zM47 26h51v1h-51zM45 27h55v1h-55zM43 28h59v1h-59zM41 29h63v1h-63zM40 30h65v1h-65zM38 31h69v1h-69zM37 32h71v1h-71zM36 33h73v1h-73zM34 34h77v1h-77zM33 35h79v1h-79zM32 36h81v1h-81zM31 37h83v1h-83zM30 38h85v1h-85zM30 39h85v1h-85zM29 40h87v1h-87zM28 41h89v1h-89zM28 42h89v1h-89zM27 43h91v1h-91zM26 44h93v1h-93zM26 45h93v1h-93zM26 46h93v1h-93zM25 47h95v1h-95zM25 48h91v1h-91zM24 49h92v1h-92zM24 50h92v1h-92zM24 51h92v1h-92zM24 52h92v1h-92zM24 53h92v1h-92zM24 54h92v1h-92zM24 55h92v1h-92zM23 56h93v1h-93zM24 57h92v1h-92zM24 58h92v1h-92zM24 59h92v1h-92zM24 60h92v1h-92zM24 61h92v1h-92zM24 62h92v1h-92zM24 63h92v1h-92zM25 64h91v1h-91zM25 65h95v1h-95zM26 66h93v1h-93zM26 67h93v1h-93zM26 68h93v1h-93zM27 69h91v1h-91zM28 70h89v1h-89zM28 71h89v1h-89zM29 72h87v1h-87zM30 73h85v1h-85zM30 74h85v1h-85zM31 75h83v1h-83zM32 76h81v1h-81zM33 77h79v1h-79zM34 78h77v1h-77zM36 79h73v1h-73zM37 80h71v1h-71zM38 81h69v1h-69zM40 82h65v1h-65zM41 83h63v1h-63zM43 84h59v1h-59zM45 85h55v1h-55zM47 86h51v1h-51zM50 87h45v1h-45zM53 88h39v1h-39zM56 89h33v1h-33zM61 90h23v1h-23zM72 91h1v1h-1z" fill="#cf4f50"/>
+    <path id="calyx" d="M116 48h30v1h-30zM116 49h30v1h-30zM116 50h30v1h-30zM116 51h30v1h-30zM116 52h30v1h-30zM116 53h30v1h-30zM116 54h30v1h-30zM116 55h30v1h-30zM116 56h30v1h-30zM116 57h30v1h-30zM116 58h30v1h-30zM116 59h30v1h-30zM116 60h30v1h-30zM116 61h30v1h-30zM116 62h30v1h-30zM116 63h30v1h-30zM116 64h30v1h-30z" fill="#56a96a"/>
+    <path id="occluder" d="M9 0h1v1h-1zM5 1h10v1h-10zM4 2h13v1h-13zM2 3h16v1h-16zM2 4h17v1h-17zM2 5h18v1h-18zM2 6h18v1h-18zM2 7h15v1h-15zM4 8h8v1h-8z" fill="#315f31" stroke="#d5e8a8" stroke-width="0.45"/>
+  </defs>
+  <rect width="780" height="184" fill="#f7fafb"/>
+  <g transform="translate(18 36)">
+    <rect width="160" height="112" rx="5" fill="#15212b"/>
+    <use href="#flesh"/>
+    <use href="#calyx"/>
+    <use href="#occluder" x="107" y="52"/>
+    <rect width="160" height="112" rx="5" fill="none" stroke="#8fa5b5"/>
+  </g>
+  <text x="98" y="29" text-anchor="middle" class="label">Attachment</text>
+  <g transform="translate(207 36)">
+    <rect width="160" height="112" rx="5" fill="#15212b"/>
+    <use href="#flesh"/>
+    <use href="#calyx"/>
+    <use href="#occluder" x="135" y="52"/>
+    <rect width="160" height="112" rx="5" fill="none" stroke="#8fa5b5"/>
+  </g>
+  <text x="287" y="29" text-anchor="middle" class="label">Calyx tip</text>
+  <g transform="translate(396 36)">
+    <rect width="160" height="112" rx="5" fill="#15212b"/>
+    <use href="#flesh"/>
+    <use href="#calyx"/>
+    <use href="#occluder" x="15" y="52"/>
+    <rect width="160" height="112" rx="5" fill="none" stroke="#8fa5b5"/>
+  </g>
+  <text x="476" y="29" text-anchor="middle" class="label">Distant Flesh</text>
+  <g transform="translate(585 36)">
+    <rect width="160" height="112" rx="5" fill="#15212b"/>
+    <use href="#flesh"/>
+    <use href="#calyx"/>
+    <use href="#occluder" x="0" y="0"/>
+    <rect width="160" height="112" rx="5" fill="none" stroke="#8fa5b5"/>
+  </g>
+  <text x="665" y="29" text-anchor="middle" class="label">Background</text>
+  <text x="390" y="165" text-anchor="middle" class="note">Same deterministic occluder; only integer translation changes between matched regions.</text>
+  <text x="390" y="180" text-anchor="middle" class="note">Procedurally generated benchmark example — not a real fruit image.</text>
+</svg>

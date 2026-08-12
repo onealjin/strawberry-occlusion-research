@@ -3,6 +3,7 @@ __pycache__/
 *.pyc
 .venv/
 .env
+.agents/
 
 # Data: never commit private data
 data/
@@ -27,6 +28,7 @@ data_private_jt/
 *.ckpt
 *.onnx
 *.engine
+/tectonic.exe
 
 # Logs/experiments
 runs/
@@ -34,6 +36,7 @@ wandb/
 mlruns/
 outputs/
 experiments_private/
+/toy_cutline_demo_output/
 
 # VisionMaster / company files
 *.vmp
