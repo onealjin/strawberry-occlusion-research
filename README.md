@@ -82,13 +82,19 @@ Implemented and tracked:
 - a preliminary new-batch evaluation workflow, configured by default for seven
   images, with automated sample-ID and image-content-hash overlap auditing;
 - controlled four-region synthetic occlusion for evaluation and group-aware
-  failure/stability summaries.
+  failure/stability summaries;
+- preliminary M5-v0 current-observation probability and frozen-geometry support
+  signals, with group-level rank association to action instability.
 
 No aggregate performance values are published in this presentation pass because
 the tracked public repository does not yet contain an approved canonical,
 sanitized aggregate-result document. This avoids turning unverified notes into
 public claims. The seven-image workflow is preliminary and is not described as
 an independent final evaluation or as proof of domain generalization.
+
+The M5-v0 analysis is specified in
+[M5: Action-Aware Failure Signals Under Occlusion](docs/m5_action_failure_signals.md).
+It is a preliminary development analysis, not a calibrated act/abstain policy.
 
 ## Quick Start: procedural geometry demo
 

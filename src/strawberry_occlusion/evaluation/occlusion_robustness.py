@@ -70,7 +70,11 @@ from strawberry_occlusion.visualization.occlusion_robustness import (
 
 PathLike = str | Path
 GeometryResult = FixedAxisCutlineResult | FixedAxisSearchCutlineResult
-InferenceFunction = Callable[..., tuple[torch.Tensor, torch.Tensor]]
+InferenceFunction = Callable[
+    ...,
+    "SegmentationInferenceOutput | tuple[torch.Tensor, torch.Tensor]",
+]
+ObservationCallback = Callable[..., None]
 V2aEstimator = Callable[..., FixedAxisCutlineResult]
 V2bEstimator = Callable[..., FixedAxisSearchCutlineResult]
 
@@ -164,6 +168,15 @@ class DevelopmentSample:
             "fixed_axis_eligible": self.fixed_axis_eligible,
             "annotation_qa_status": self.annotation_qa_status,
         }
+
+
+@dataclass(frozen=True)
+class SegmentationInferenceOutput:
+    """Current-observation inference outputs retained without changing M4 results."""
+
+    prediction: torch.Tensor
+    normalized_entropy: torch.Tensor
+    probabilities: torch.Tensor | None = None
 
 
 TRIAL_FIELDS = (
@@ -700,6 +713,7 @@ def run_occlusion_robustness(
     inference_function: InferenceFunction | None = None,
     v2a_estimator: V2aEstimator = estimate_fixed_axis_cutline,
     v2b_estimator: V2bEstimator = estimate_fixed_axis_search_cutline,
+    observation_callback: ObservationCallback | None = None,
 ) -> dict[str, Any]:
     """Run the canonical development-only mechanistic robustness benchmark."""
 
@@ -751,16 +765,12 @@ def run_occlusion_robustness(
                     height=height,
                     width=width,
                 )
-                clean_prediction, clean_entropy = infer(
-                    model,
-                    clean_image,
-                    device=resolved_device,
-                )
-                clean_prediction = _validated_prediction(
-                    clean_prediction,
+                clean_inference = _validated_inference_output(
+                    infer(model, clean_image, device=resolved_device),
                     shape=target.shape,
                 )
-                clean_entropy = _validated_entropy(clean_entropy, shape=target.shape)
+                clean_prediction = clean_inference.prediction
+                clean_entropy = clean_inference.normalized_entropy
                 clean_metrics = masked_segmentation_metrics(
                     clean_prediction,
                     target,
@@ -873,16 +883,16 @@ def run_occlusion_robustness(
                             occluded_image = torch.from_numpy(
                                 np.ascontiguousarray(occluded_hwc.transpose(2, 0, 1))
                             ).to(dtype=torch.float32)
-                            prediction, entropy = infer(
-                                model,
-                                occluded_image,
-                                device=resolved_device,
-                            )
-                            prediction = _validated_prediction(
-                                prediction,
+                            inference = _validated_inference_output(
+                                infer(
+                                    model,
+                                    occluded_image,
+                                    device=resolved_device,
+                                ),
                                 shape=target.shape,
                             )
-                            entropy = _validated_entropy(entropy, shape=target.shape)
+                            prediction = inference.prediction
+                            entropy = inference.normalized_entropy
                             occ_v2a, occ_v2b = _run_frozen_geometry(
                                 prediction.numpy(),
                                 v2a_estimator=v2a_estimator,
@@ -923,6 +933,20 @@ def run_occlusion_robustness(
                                 )
                                 trial_rows.append(row)
                                 method_rows[method] = row
+                            if observation_callback is not None:
+                                observation_callback(
+                                    sample=sample,
+                                    severity_fraction=severity,
+                                    seed=seed,
+                                    region=region,
+                                    matched_set_id=matched_set_id,
+                                    perturbation_id=perturbation_id,
+                                    prediction=prediction,
+                                    probabilities=inference.probabilities,
+                                    v2a_result=occ_v2a,
+                                    v2b_result=occ_v2b,
+                                    method_rows=method_rows,
+                                )
                             quartet_payload[region] = {
                                 "image": np.rint(occluded_hwc * 255.0)
                                 .clip(0, 255)
@@ -1338,7 +1362,7 @@ def _infer_segmentation(
     image: torch.Tensor,
     *,
     device: torch.device,
-) -> tuple[torch.Tensor, torch.Tensor]:
+) -> SegmentationInferenceOutput:
     """Infer from RGB only; no GT or placement mask enters this interface."""
 
     if image.ndim != 3 or image.shape[0] != 3:
@@ -1346,8 +1370,12 @@ def _infer_segmentation(
     images = image.unsqueeze(0).to(device)
     logits = _model_logits(model(images))
     _validate_logits(logits, images)
-    _, _, entropy = confidence_and_entropy(logits)
-    return logits.argmax(dim=1)[0].cpu(), entropy[0].cpu()
+    probabilities, _, entropy = confidence_and_entropy(logits)
+    return SegmentationInferenceOutput(
+        prediction=logits.argmax(dim=1)[0].cpu(),
+        normalized_entropy=entropy[0].cpu(),
+        probabilities=probabilities[0].cpu(),
+    )
 
 
 def _load_listed_pair(
@@ -1911,6 +1939,47 @@ def _masked_mean(values: torch.Tensor, mask: np.ndarray) -> float | None:
     return float(selected.mean().item()) if selected.numel() else None
 
 
+def _validated_inference_output(
+    value: SegmentationInferenceOutput | tuple[torch.Tensor, torch.Tensor],
+    *,
+    shape: tuple[int, int],
+) -> SegmentationInferenceOutput:
+    if isinstance(value, SegmentationInferenceOutput):
+        prediction_value = value.prediction
+        entropy_value = value.normalized_entropy
+        probabilities_value = value.probabilities
+    elif isinstance(value, tuple) and len(value) == 2:
+        prediction_value, entropy_value = value
+        probabilities_value = None
+    else:
+        raise TypeError(
+            "inference_function must return SegmentationInferenceOutput or a "
+            "(prediction, normalized_entropy) tuple"
+        )
+    prediction = _validated_prediction(prediction_value, shape=shape)
+    entropy = _validated_entropy(entropy_value, shape=shape)
+    probabilities = (
+        _validated_probabilities(probabilities_value, shape=shape)
+        if probabilities_value is not None
+        else None
+    )
+    if probabilities is not None:
+        selected = probabilities.gather(
+            0,
+            prediction.unsqueeze(0).long(),
+        ).squeeze(0)
+        if not torch.equal(selected, probabilities.max(dim=0).values):
+            raise ValueError(
+                "inference probabilities must attain their maximum "
+                "at the predicted class"
+            )
+    return SegmentationInferenceOutput(
+        prediction=prediction,
+        normalized_entropy=entropy,
+        probabilities=probabilities,
+    )
+
+
 def _validated_prediction(value: Any, *, shape: tuple[int, int]) -> torch.Tensor:
     tensor = torch.as_tensor(value).cpu()
     if tensor.shape != shape:
@@ -1936,6 +2005,20 @@ def _validated_entropy(value: Any, *, shape: tuple[int, int]) -> torch.Tensor:
         raise ValueError("inference entropy must be a finite evaluation-shape tensor")
     if torch.any((tensor < 0.0) | (tensor > 1.0)):
         raise ValueError("inference entropy values must be in [0, 1]")
+    return tensor
+
+
+def _validated_probabilities(value: Any, *, shape: tuple[int, int]) -> torch.Tensor:
+    tensor = torch.as_tensor(value, dtype=torch.float32).cpu()
+    if tensor.shape != (3, *shape) or not torch.all(torch.isfinite(tensor)):
+        raise ValueError(
+            "inference probabilities must be a finite tensor with shape [3, H, W]"
+        )
+    if torch.any((tensor < 0.0) | (tensor > 1.0)):
+        raise ValueError("inference probabilities must be in [0, 1]")
+    sums = tensor.sum(dim=0)
+    if not torch.allclose(sums, torch.ones_like(sums), atol=1e-5, rtol=1e-5):
+        raise ValueError("inference probabilities must sum to one at every pixel")
     return tensor
 
 

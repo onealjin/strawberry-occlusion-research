@@ -26,8 +26,10 @@ from strawberry_occlusion.evaluation.occlusion_robustness import (
     REQUIRED_MANIFEST_FIELDS,
     SUMMARY_OUTCOMES,
     TRIAL_FIELDS,
+    SegmentationInferenceOutput,
     _build_argument_parser,
     _install_staged_directory,
+    _validated_inference_output,
     _validate_output_destination,
     benchmark_profile,
     bootstrap_group_intervals,
@@ -621,6 +623,57 @@ def test_reference_sign_conventions_excess_error_and_silent_drift() -> None:
             method_status="failed", finite_cut_returned=False, stability_abs=99.0
         ).values()
     )
+
+
+def test_probability_consistency_accepts_softmax_rounding_tie_at_predicted_class() -> (
+    None
+):
+    logits = torch.tensor(
+        [0.0, torch.nextafter(torch.tensor(0.0), torch.tensor(1.0)), -100.0]
+    )
+    probabilities = torch.softmax(logits, dim=0).reshape(3, 1, 1)
+    assert probabilities[0, 0, 0] == probabilities[1, 0, 0]
+    assert logits.argmax().item() == 1
+    assert probabilities.argmax().item() == 0
+
+    output = _validated_inference_output(
+        SegmentationInferenceOutput(
+            prediction=torch.tensor([[1]], dtype=torch.long),
+            normalized_entropy=torch.tensor([[0.5]]),
+            probabilities=probabilities,
+        ),
+        shape=(1, 1),
+    )
+
+    assert output.prediction.item() == 1
+
+
+def test_probability_consistency_rejects_prediction_below_probability_maximum() -> None:
+    with pytest.raises(
+        ValueError,
+        match="probabilities must attain their maximum at the predicted class",
+    ):
+        _validated_inference_output(
+            SegmentationInferenceOutput(
+                prediction=torch.tensor([[1]], dtype=torch.long),
+                normalized_entropy=torch.tensor([[0.5]]),
+                probabilities=torch.tensor([[[0.7]], [[0.2]], [[0.1]]]),
+            ),
+            shape=(1, 1),
+        )
+
+
+def test_two_tensor_inference_output_remains_supported_without_probabilities() -> None:
+    output = _validated_inference_output(
+        (
+            torch.tensor([[2]], dtype=torch.long),
+            torch.tensor([[0.25]], dtype=torch.float32),
+        ),
+        shape=(1, 1),
+    )
+
+    assert output.prediction.item() == 2
+    assert output.probabilities is None
 
 
 def test_frozen_profile_and_cli_expose_no_geometry_or_severity_tuning() -> None:
