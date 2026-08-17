@@ -9,6 +9,17 @@ cut-coordinate estimates and failure behavior.
 > and how should a vision-guided system recognize when available evidence is
 > insufficient to support an action?
 
+## Research progression
+
+| Stage | Research question | Status |
+|---|---|---|
+| Segmentation | Can visible Flesh and Calyx be segmented reproducibly? | Complete |
+| v1 → v2a → v2b | How should segmentation be converted into an interpretable cut coordinate? | Complete |
+| M4 | Do controlled attachment-region perturbations disproportionately destabilize the downstream cut coordinate relative to background perturbations? | Complete |
+| M5-v0 | Can signals available from the current observation identify downstream action instability? | Complete; exploratory |
+| M5-v1 | Does a frozen selective-action rule improve retained action stability? | Complete; improvement not demonstrated; development reuse |
+| Next | How should the system choose among act, withhold, or acquire additional information on new fruit groups? | Planned; not yet specified |
+
 ![Perception-to-action research pipeline](assets/readme/perception_to_action_pipeline.svg)
 
 ## What this is—and what it is not
