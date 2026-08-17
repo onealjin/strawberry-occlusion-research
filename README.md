@@ -86,21 +86,24 @@ Implemented and tracked:
 - preliminary M5-v0 current-observation probability and frozen-geometry support
   signals, with group-level rank association to action instability;
 - frozen M5-v1 group-first risk associations and global-threshold
-  selective-action curves with group bootstrap, a descriptive random-policy
-  reference, and an explicit development-reuse claim boundary.
+  selective-action curves with group bootstrap, a descriptive
+  random-withholding reference, and an explicit development-reuse claim
+  boundary. The development-reuse analysis is complete and frozen: the
+  pre-specified
+  70%-requested geometry policy did not demonstrate improved retained action
+  stability (`Delta_70 = -0.582 px`; 95% group-cluster-bootstrap interval
+  [-1.090, 0.788]).
 
-No aggregate performance values are published in this presentation pass because
-the tracked public repository does not yet contain an approved canonical,
-sanitized aggregate-result document. This avoids turning unverified notes into
-public claims. The seven-image workflow is preliminary and is not described as
-an independent final evaluation or as proof of domain generalization.
+The approved M5-v1 aggregate result is documented as descriptive,
+selection-biased, and non-confirmatory. The seven-image workflow remains
+preliminary and is not described as an independent final evaluation or as
+evidence of broad domain transfer.
 
 The M5-v0 analysis is specified in
 [M5: Action-Aware Failure Signals Under Occlusion](docs/m5_action_failure_signals.md).
 It is a preliminary development analysis, not a calibrated act/abstain policy.
-The derived selective-action design is specified in
-[M5-v1: Descriptive Selective Action](docs/m5_v1_selective_action.md); its
-development-reuse results remain descriptive and non-confirmatory.
+The frozen design and completed development-reuse result are in the
+[M5-v1 selective-action documentation](docs/m5_v1_selective_action.md).
 
 ## Quick Start: procedural geometry demo
 
