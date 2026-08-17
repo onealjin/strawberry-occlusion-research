@@ -50,6 +50,8 @@ jt_internal_reports/
 .vscode/
 
 # Local AI handoff notes
+/AGENTS.md
+/CLAUDE.md
 .agent_handoffs/
 CLAUDE.local.md
 .claude/settings.local.json
