@@ -84,7 +84,10 @@ Implemented and tracked:
 - controlled four-region synthetic occlusion for evaluation and group-aware
   failure/stability summaries;
 - preliminary M5-v0 current-observation probability and frozen-geometry support
-  signals, with group-level rank association to action instability.
+  signals, with group-level rank association to action instability;
+- frozen M5-v1 group-first risk associations and global-threshold
+  selective-action curves with group bootstrap, a descriptive random-policy
+  reference, and an explicit development-reuse claim boundary.
 
 No aggregate performance values are published in this presentation pass because
 the tracked public repository does not yet contain an approved canonical,
@@ -95,6 +98,9 @@ an independent final evaluation or as proof of domain generalization.
 The M5-v0 analysis is specified in
 [M5: Action-Aware Failure Signals Under Occlusion](docs/m5_action_failure_signals.md).
 It is a preliminary development analysis, not a calibrated act/abstain policy.
+The derived selective-action design is specified in
+[M5-v1: Descriptive Selective Action](docs/m5_v1_selective_action.md); its
+development-reuse results remain descriptive and non-confirmatory.
 
 ## Quick Start: procedural geometry demo
 

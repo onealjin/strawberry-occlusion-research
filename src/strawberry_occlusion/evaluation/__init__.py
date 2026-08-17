@@ -4,7 +4,9 @@ from importlib import import_module
 from types import ModuleType
 
 __all__ = ["cutline", "segmentation"]
-_LAZY_MODULES = frozenset((*__all__, "action_failure_signals", "occlusion_robustness"))
+_LAZY_MODULES = frozenset(
+    (*__all__, "action_failure_signals", "occlusion_robustness", "selective_action")
+)
 
 
 def __getattr__(name: str) -> ModuleType:

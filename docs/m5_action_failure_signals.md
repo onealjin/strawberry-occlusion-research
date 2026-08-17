@@ -173,9 +173,10 @@ The output directory contains:
   run configuration.
 
 The figures show group means, not independent perturbation observations. The
-selective-action staircase is deferred to M5-v1 so that this first milestone
-does not inflate scope or imply an act/abstain calibration that has not been
-performed.
+selective-action staircase remains outside the frozen M5-v0 scope and is
+implemented separately in
+[M5-v1: Descriptive Selective Action](m5_v1_selective_action.md), without implying
+an act/abstain calibration.
 
 The M5 observation CSV uses round-trip-safe float precision. Summarization
 treats that inference output as read-only and regenerates only derived tables,
